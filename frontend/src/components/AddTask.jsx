@@ -1,7 +1,8 @@
 import React from "react";
-import { Button, Modal, Input } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { updateUserTasks } from "../features/task/taskSlice";
+import { PlusOutlined } from "@ant-design/icons";
+import { Button, Modal, Input } from "antd";
 import axios from "axios";
 
 function AddTask() {
@@ -66,8 +67,13 @@ function AddTask() {
   return (
     <>
       <section className="text-gray-600 body-font">
-        <div>
-          <Button type="primary" onClick={showModal}>
+        <div className="container mx-auto flex flex-col items-center py-12">
+          <Button
+            type="primary"
+            shape="round"
+            onClick={showModal}
+            icon={<PlusOutlined />}
+          >
             Add Task
           </Button>
           <Modal
@@ -75,30 +81,42 @@ function AddTask() {
             open={isModalOpen}
             onOk={handleAddTask}
             onCancel={handleCancel}
+            footer={[
+              <Button key="back" onClick={handleCancel}>
+                Cancel
+              </Button>,
+              <Button key="submit" type="primary" onClick={handleAddTask}>
+                Add Task
+              </Button>,
+            ]}
           >
-            <Input
-              name="title"
-              placeholder="task title"
-              value={taskDetails.title}
-              onChange={handleChange}
-              style={{ marginBottom: "10px" }}
-            />
-            <Input
-              name="description"
-              placeholder="task description"
-              value={taskDetails.description}
-              onChange={handleChange}
-              style={{ marginBottom: "10px" }}
-            />
-            <p>Task due date</p>
-            <Input
-              name="date"
-              type="date"
-              placeholder="task date"
-              value={taskDetails.date}
-              onChange={handleChange}
-              style={{ marginBottom: "10px" }}
-            />
+            <div className="space-y-4">
+              <Input
+                name="title"
+                placeholder="Task Title"
+                value={taskDetails.title}
+                onChange={handleChange}
+                className="p-2 border rounded w-full"
+              />
+              <Input
+                name="description"
+                placeholder="Task Description"
+                value={taskDetails.description}
+                onChange={handleChange}
+                className="p-2 border rounded w-full"
+              />
+              <div>
+                <p className="mb-2">Task Due Date</p>
+                <Input
+                  name="date"
+                  type="date"
+                  placeholder="Task Date"
+                  value={taskDetails.date}
+                  onChange={handleChange}
+                  className="p-2 border rounded w-full"
+                />
+              </div>
+            </div>
           </Modal>
         </div>
       </section>

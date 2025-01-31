@@ -1,6 +1,17 @@
-import { useState, useEffect } from "react";
-import { Dropdown, Tag, Card, Button, Menu, Input, Modal } from "antd";
-import { DownOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import {
+  Dropdown,
+  Tag,
+  Card,
+  Button,
+  Menu,
+  Input,
+  Modal,
+  Pagination,
+  Spin,
+  notification,
+} from "antd";
+import { DownOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { setTasks } from "../features/task/taskSlice";
@@ -17,13 +28,16 @@ const TaskList = () => {
     description: "",
     date: "",
   });
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     status: "all",
     title: "",
     description: "",
     date: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const tasksPerPage = 6;
 
   function formatDate(params) {
     const date = new Date(params);
@@ -33,6 +47,8 @@ const TaskList = () => {
 
   useEffect(() => {
     const fetchTasks = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
         const response = await axios.get(
           `http://localhost:3000/api/v1/tasks/gettasks/${user._id}`
@@ -42,17 +58,30 @@ const TaskList = () => {
 
         if (response.data.status === "successfull") {
           dispatch(setTasks(response.data.data));
+          notification.success({
+            message: "Success",
+            description: "Task deleted successfully.",
+          });
         }
       } catch (error) {
         console.error("Error fetching tasks:", error);
+        setError(error.message);
+        notification.error({
+          message: "Error",
+          description: "Failed to fetch tasks. Please try again later.",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchTasks();
-  }, [dispatch]);
+  }, [dispatch, user._id]);
 
   const handleMenuClick = async (taskId, action) => {
     console.log(`Task ID: ${taskId}, Action: ${action}`); // Debugging log
+    setIsLoading(true);
+    setError(null);
     if (action === "delete") {
       try {
         const response = await axios.delete(
@@ -60,9 +89,25 @@ const TaskList = () => {
         );
         if (response.data.status === "success") {
           dispatch(setTasks(response.data.tasks));
+          notification.success({
+            message: "Success",
+            description: "Task deleted successfully.",
+          });
         }
       } catch (error) {
-        console.error("Error deleting task:", error);
+        console.error(
+          `Error ${action === "delete" ? "deleting" : "updating"} task:`,
+          error
+        );
+        setError(error.message);
+        notification.error({
+          message: "Error",
+          description: `Failed to ${
+            action === "delete" ? "delete" : "update"
+          } task. Please try again later.`,
+        });
+      } finally {
+        setIsLoading(false);
       }
     } else if (action === "edit") {
       const task = tasks.find((task) => task._id === taskId);
@@ -81,14 +126,32 @@ const TaskList = () => {
         );
         if (response.data.status === "success") {
           dispatch(setTasks(response.data.tasks));
+          notification.success({
+            message: "Success",
+            description: "Task status updated successfully.",
+          });
         }
       } catch (error) {
-        console.error("Error updating task status:", error);
+        console.error(
+          `Error ${action === "edit" ? "editing" : "updating"} task:`,
+          error
+        );
+        setError(error.message);
+        notification.error({
+          message: "Error",
+          description: `Failed to ${
+            action === "edit" ? "edit" : "update"
+          } task. Please try again later.`,
+        });
+      } finally {
+        setIsLoading(false);
       }
     }
   };
 
   const handleUpdateTask = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await axios.patch(
         `http://localhost:3000/api/v1/tasks/update/${currentTask._id}`,
@@ -100,6 +163,13 @@ const TaskList = () => {
       }
     } catch (error) {
       console.error("Error updating task:", error);
+      setError(error.message);
+      notification.error({
+        message: "Error",
+        description: "Failed to update task. Please try again later.",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -148,6 +218,7 @@ const TaskList = () => {
         return "default";
     }
   };
+
   const filteredTasks = tasks.filter((task) => {
     return (
       (filters.status === "all" || task.status === filters.status) &&
@@ -161,48 +232,81 @@ const TaskList = () => {
     );
   });
 
+  const indexOfLastTask = currentPage * tasksPerPage;
+  const indexOfFirstTask = indexOfLastTask - tasksPerPage;
+  const currentTasks = filteredTasks.slice(indexOfFirstTask, indexOfLastTask);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   return (
-    <div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold text-center mb-8">Task List</h1>
       <Filter onFilterChange={handleFilterChange} />
-      {filteredTasks.map((task) => (
-        <Card key={task._id} title={task.title} style={{ marginBottom: 16 }}>
-          <p>{task.description}</p>
-          <p>{formatDate(task.date)}</p>
-          <Dropdown
-            overlay={
-              <Menu onClick={(e) => handleMenuClick(task._id, e.key)}>
-                {items.map((item) => (
-                  <Menu.Item key={item.label}>{item.label}</Menu.Item>
-                ))}
-              </Menu>
-            }
-            placement="bottom"
-          >
-            <Button className="flex w-fit-content items-center gap-5 justify-between">
-              <Tag
-                color={getStatusColor(task.status)}
-                className="w-fit-content"
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <Spin size="large" />
+        </div>
+      ) : (
+        <>
+          {error}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {currentTasks.map((task) => (
+              <Card
+                key={task._id}
+                className="shadow-lg rounded-lg overflow-hidden"
               >
-                {task.status}
-              </Tag>
-              <DownOutlined />
-            </Button>
-          </Dropdown>
-          <Button
-            onClick={() => handleMenuClick(task._id, "edit")}
-            style={{ marginLeft: 8 }}
-          >
-            Edit
-          </Button>
-          <Button
-            onClick={() => handleMenuClick(task._id, "delete")}
-            style={{ marginLeft: 8 }}
-            danger
-          >
-            Delete
-          </Button>
-        </Card>
-      ))}
+                <div className="p-4">
+                  <h2 className="text-xl font-bold mb-2">{task.title}</h2>
+                  <p className="text-gray-600 mb-2">{task.description}</p>
+                  <p className="text-gray-400 mb-4">{formatDate(task.date)}</p>
+                  <div className="flex justify-between items-center">
+                    <Dropdown
+                      overlay={
+                        <Menu onClick={(e) => handleMenuClick(task._id, e.key)}>
+                          {items.map((item) => (
+                            <Menu.Item key={item.label}>{item.label}</Menu.Item>
+                          ))}
+                        </Menu>
+                      }
+                      placement="bottom"
+                    >
+                      <Button className="flex items-center gap-2">
+                        <Tag color={getStatusColor(task.status)}>
+                          {task.status}
+                        </Tag>
+                        <DownOutlined />
+                      </Button>
+                    </Dropdown>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleMenuClick(task._id, "edit")}
+                        type="primary"
+                      >
+                        <EditOutlined />
+                      </Button>
+                      <div className="bg-red-500 text-white rounded-md hover:text-red-700 cursor-pointer p-1 px-4 ">
+                        <DeleteOutlined
+                          onClick={() => handleMenuClick(task._id, "delete")}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+          <div className="flex justify-center mt-8">
+            <Pagination
+              current={currentPage}
+              pageSize={tasksPerPage}
+              total={filteredTasks.length}
+              onChange={handlePageChange}
+            />
+          </div>
+        </>
+      )}
       <Modal
         title="Edit Task"
         open={isModalOpen}
