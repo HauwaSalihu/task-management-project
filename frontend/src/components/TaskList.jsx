@@ -1,17 +1,25 @@
-import React, { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Dropdown, Tag, Card, Button, Menu, Input, Modal } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { setTasks } from "../features/task/taskSlice";
+import Filter from "./Filter";
 
 const TaskList = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.task.userTasks);
   const { user } = useSelector((state) => state.user);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [currentTask, setCurrentTask] = React.useState(null);
-  const [taskDetails, setTaskDetails] = React.useState({
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentTask, setCurrentTask] = useState(null);
+  const [taskDetails, setTaskDetails] = useState({
+    title: "",
+    description: "",
+    date: "",
+  });
+
+  const [filters, setFilters] = useState({
+    status: "all",
     title: "",
     description: "",
     date: "",
@@ -103,6 +111,13 @@ const TaskList = () => {
     }));
   };
 
+  const handleFilterChange = (filterType, value) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [filterType]: value,
+    }));
+  };
+
   const items = [
     {
       key: "1",
@@ -133,10 +148,23 @@ const TaskList = () => {
         return "default";
     }
   };
+  const filteredTasks = tasks.filter((task) => {
+    return (
+      (filters.status === "all" || task.status === filters.status) &&
+      (filters.title === "" ||
+        task.title.toLowerCase().includes(filters.title.toLowerCase())) &&
+      (filters.description === "" ||
+        task.description
+          .toLowerCase()
+          .includes(filters.description.toLowerCase())) &&
+      (filters.date === "" || formatDate(task.date) === filters.date)
+    );
+  });
 
   return (
     <div>
-      {tasks.map((task) => (
+      <Filter onFilterChange={handleFilterChange} />
+      {filteredTasks.map((task) => (
         <Card key={task._id} title={task.title} style={{ marginBottom: 16 }}>
           <p>{task.description}</p>
           <p>{formatDate(task.date)}</p>
