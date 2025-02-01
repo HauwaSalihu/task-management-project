@@ -1,5 +1,5 @@
 import React from "react";
-import AddTask from "../components/addTask";
+import AddTask from "../components/AddTask";
 import TaskList from "../components/TaskList";
 
 function Task() {
