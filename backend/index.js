@@ -11,8 +11,8 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "https://task-management-project-0bpq.onrender.com",
-      "https://task-management-project-0bpq.onrender.com/",
+      "https://task-management-project-tau.vercel.app/",
+      "https://task-management-project-tau.vercel.app",
       "http://localhost:5173/",
       "http://localhost:5173",
     ],
