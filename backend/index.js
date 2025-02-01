@@ -10,7 +10,12 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173/", "http://localhost:5173"],
+    origin: [
+      "https://task-management-project-0bpq.onrender.com",
+      "https://task-management-project-0bpq.onrender.com/",
+      "http://localhost:5173/",
+      "http://localhost:5173",
+    ],
   })
 );
 
