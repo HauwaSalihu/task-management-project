@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Home from "./pages/Home";
-import MainLayout from "./layout/Mainlayout.jsx";
+import MainLayout from "./layout/MainLayout.jsx";
 import Task from "./pages/Task";
 import ProtectedRoute from "./layout/ProtetedRoute.jsx";
 
