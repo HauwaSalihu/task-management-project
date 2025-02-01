@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { setTasks } from "../features/task/taskSlice";
 import Filter from "./Filter";
+import { serverUrl } from "../utils/helper";
 
 const TaskList = () => {
   const dispatch = useDispatch();
@@ -51,7 +52,7 @@ const TaskList = () => {
       setError(null);
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/v1/tasks/gettasks/${user._id}`
+          `${serverUrl}/tasks/gettasks/${user._id}`
         );
 
         console.log(response.data);
@@ -85,7 +86,7 @@ const TaskList = () => {
     if (action === "delete") {
       try {
         const response = await axios.delete(
-          `http://localhost:3000/api/v1/tasks/delete/${taskId}/${user._id}`
+          `${serverUrl}/tasks/delete/${taskId}/${user._id}`
         );
         if (response.data.status === "success") {
           dispatch(setTasks(response.data.tasks));
@@ -121,7 +122,7 @@ const TaskList = () => {
     } else {
       try {
         const response = await axios.patch(
-          `http://localhost:3000/api/v1/tasks/update/${taskId}`,
+          `${serverUrl}/tasks/update/${taskId}`,
           { status: action }
         );
         if (response.data.status === "success") {
@@ -154,7 +155,7 @@ const TaskList = () => {
     setError(null);
     try {
       const response = await axios.patch(
-        `http://localhost:3000/api/v1/tasks/update/${currentTask._id}`,
+        `${serverUrl}/tasks/update/${currentTask._id}`,
         taskDetails
       );
       if (response.data.status === "success") {

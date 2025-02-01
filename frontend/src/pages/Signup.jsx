@@ -3,6 +3,7 @@ import { Input, Button } from "antd";
 import { Link, useNavigate } from "react-router";
 import validator from "validator";
 import axios from "axios";
+import { serverUrl } from "../utils/helper";
 
 function Signup() {
   const [userInfo, setUserInfo] = React.useState({
@@ -36,10 +37,7 @@ function Signup() {
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/v1/auth/signup",
-        userInfo
-      );
+      const response = await axios.post(`${serverUrl}/auth/signup`, userInfo);
 
       if (response.data.status === "success") {
         console.log("account created successful");

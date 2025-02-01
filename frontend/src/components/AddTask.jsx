@@ -4,6 +4,7 @@ import { updateUserTasks } from "../features/task/taskSlice";
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Modal, Input } from "antd";
 import axios from "axios";
+import { serverUrl } from "../utils/helper";
 
 function AddTask() {
   const [taskDetails, setTaskDetails] = React.useState({
@@ -40,10 +41,10 @@ function AddTask() {
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/v1/tasks/addTask",
-        { ...taskDetails, userId: user._id }
-      );
+      const response = await axios.post(`${serverUrl}/tasks/addTask`, {
+        ...taskDetails,
+        userId: user._id,
+      });
 
       if (response.data.status === "success") {
         console.log("Task added successfully");

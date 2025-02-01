@@ -5,6 +5,7 @@ import validator from "validator";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { updateUser } from "../features/task/userSlice";
+import { serverUrl } from "../utils/helper";
 
 function Login() {
   const [userInfo, setUserInfo] = React.useState({
@@ -34,10 +35,7 @@ function Login() {
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/v1/auth/login",
-        userInfo
-      );
+      const response = await axios.post(`${serverUrl}/auth/login`, userInfo);
 
       if (response.data.status === "success") {
         localStorage.setItem("user", JSON.stringify(response.data.user));
